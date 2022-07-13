@@ -1,33 +1,39 @@
-import { useEffect} from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useEffect } from "react";
+import { useSelector, useDispatch, shallowEqual } from "react-redux";
 import Searcher from "./components/Searcher";
 import { Col, Spin } from "antd";
 import "./App.css";
 import PokemonList from "./components/PokemonList";
-import logo from './statics/logo.svg';
-import { getPokemon } from './api';
-import { getPokemonsWithDetails, setLoading } from "./actions"; 
+import logo from "./statics/logo.svg";
+import { getPokemon } from "./api";
+import { getPokemonsWithDetails, setLoading } from "./actions";
 
 function App() {
-  const pokemons = useSelector((state) => state.get('pokemons')).toJS();
-  const loading = useSelector((state) => state.get('loading'))
-  const dispatch = useDispatch()
+    const pokemons = useSelector((state) =>
+        state.getIn(["data", "pokemons"], shallowEqual)
+    ).toJS();
 
-  useEffect(() => {
-    // Funcion asincrona
-    const fetchPokemons = async () => {
-      dispatch(setLoading(true))
-      const pokemonsRes = await getPokemon();
-      // Este promise.all significa que va a lanzar un conjunto de peticiones al mismo tiempo de
-      // y se va a resolver cuando todas ellas hayan estado resueltas. 
-      // Por cada uno de los pokemones que me haya traido la respuesta (pokemonsRes) vamos a obtener
-      // sus detalles.
-      dispatch(getPokemonsWithDetails(pokemonsRes));
-      dispatch(setLoading(false));
-    };
-    
-    fetchPokemons();
-  }, [])
+    // El useSelector para saber si renderizar un componente o no, utiliza una comparacion estricta. === 
+
+
+    const loading = useSelector((state) => state.getIn(["ui", "loading"]));
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        // Funcion asincrona
+        const fetchPokemons = async () => {
+            dispatch(setLoading(true));
+            const pokemonsRes = await getPokemon();
+            // Este promise.all significa que va a lanzar un conjunto de peticiones al mismo tiempo de
+            // y se va a resolver cuando todas ellas hayan estado resueltas.
+            // Por cada uno de los pokemones que me haya traido la respuesta (pokemonsRes) vamos a obtener
+            // sus detalles.
+            dispatch(getPokemonsWithDetails(pokemonsRes));
+            dispatch(setLoading(false));
+        };
+
+        fetchPokemons();
+    }, []);
 
     return (
         <div className="App">
@@ -47,6 +53,5 @@ function App() {
         </div>
     );
 }
-
 
 export default App;
